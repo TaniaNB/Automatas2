@@ -3,12 +3,15 @@ package main;
 import javax.swing.JOptionPane;
 import ArbolSintactico.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class Parser {
     
     //Declaración de variables
+    public String codigoG;
+    public int barridoG = 0;
     Programax p = null;
     String[] tipo = null;
     String[] variable;
@@ -48,7 +51,7 @@ public class Parser {
         //Inicializando contador de tokens y de errores
         countertoken = 0;
         err = 0;
-        
+        codigoG = codigo;
         s = new Scanner(codigo);
         token = s.getToken(true);
         tknCode = stringToCode(token);
@@ -437,7 +440,7 @@ public class Parser {
             variable[i] = dx.s2;
             tipo[i] = dx.s1.getTypex();
             
-            ts.add(new DSimbolos(no, variable[i], tipo[i])); //Tabla DSimbolos para el Frame
+            ts.add(new DSimbolos(no, variable[i], tipo[i],sacaLineaSimbolo(tipo[i]+" "+variable[i]) )); //Tabla DSimbolos para el Frame
             
             System.out.println(no+"   "+variable[i] + ": "+ tipo[i]); //Imprime tabla de símbolos por consola. 
         }
@@ -721,7 +724,24 @@ public class Parser {
           break;
         }
     }
-    
+    public int sacaLineaSimbolo(String simbolo){
+//        int espacio = codigoG.indexOf(simbolo);
+//        int linea = espacio + barridoG;
+//        int tamaño = simbolo.toCharArray().length;
+//        codigoG = codigoG.substring(espacio+tamaño);
+//        barridoG += espacio+tamaño;
+        int linea = -1;
+        String s[] = codigoG.split("\\r?\\n");
+        ArrayList<String>lineas = new ArrayList<>(Arrays.asList(s)) ;
+        for (int i = 0; i < lineas.size(); i++) {
+            if (lineas.get(i).contains(simbolo)) {
+                linea = i;
+                break;
+            }
+        }
+
+        return linea;
+    }
     //Tipo
     public String byteCode(String tipo){
         

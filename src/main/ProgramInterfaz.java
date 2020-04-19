@@ -126,17 +126,17 @@ public class ProgramInterfaz extends javax.swing.JFrame {
 
         tSimbolos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "No.", "Símbolo", "Tipo de Dato"
+                "No.", "Símbolo", "Tipo de Dato", "Linea", "Alcance"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -162,13 +162,14 @@ public class ProgramInterfaz extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(69, 69, 69)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(140, 140, 140)
-                        .addComponent(jLabel4)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                        .addComponent(jLabel4))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(72, 72, 72))
             .addGroup(layout.createSequentialGroup()
@@ -287,7 +288,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         //IMPRESION DE LA TABLA DE SIMBOLOS --->
         //Asignando a matriz "ts" datos de Parser Lista de DSimbolos
         ArrayList<DSimbolos> ts = p.mandaSimbolos();
-        String matrizS [][] = new String [ts.size()][3];
+        String matrizS [][] = new String [ts.size()][5];
         
         //Pasando los datos de la matriz "ts" a la matriz de String
         for (int i = 0; i < ts.size(); i++) {
@@ -295,17 +296,20 @@ public class ProgramInterfaz extends javax.swing.JFrame {
             matrizS[i][0] = Integer.toString(ts.get(i).getNo());
             matrizS[i][1] = ts.get(i).getSimbolo();
             matrizS[i][2] = ts.get(i).getTipoSimbolo();
+            matrizS[i][3] = ""+(ts.get(i).getLinea()+1);
+            matrizS[i][4] = "Publica";
+            
         }
         
         //Impresión de matriz a la tabla
         tSimbolos.setModel(new javax.swing.table.DefaultTableModel(
             matrizS,
             new String [] {
-                "No.", "Símbolo", "Tipo de Dato"
+                "No.", "Símbolo", "Tipo de Dato", "Posicion", "Alcance"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false, false
             };
             
             public boolean isCellEditable(int rowIndex, int columnIndex) {

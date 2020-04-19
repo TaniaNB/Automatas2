@@ -15,6 +15,7 @@ package main;
         this.no = no;
         this.tok = tok;
         this.tipoTok = tipoTok;
+//        this.linea = linea;
     }
 
     public int getNo() {
