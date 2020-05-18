@@ -19,6 +19,8 @@ public class Parser {
     private ArrayList<DToken> tablaTokens = new ArrayList<DToken>();
     private ArrayList<DSimbolos> ts = new ArrayList<DSimbolos>();
     private ArrayList<String> listIndiceBc = new ArrayList<>();
+    private ArrayList<String> listIndiceT = new ArrayList<>();
+    
     private final Scanner s;
     final int classx=1, booleanx=2, intx=3, whilex=4, sopx=5, truex=6, falsex=7, igualx=8, menorx=9, 
             sumax=10, menosx=11, multx=12, puntocomx=13, llaveAbre=14, llaveCierra=15, parenAbre =16, parenCierra=17, 
@@ -35,14 +37,18 @@ public class Parser {
     
     //Sección de bytecode  --------------------------------
     private int cntBC = 0; // Contador de lineas para el código bytecode
+    private int cntT = 0;
     private String bc; // String temporal de bytecode
     private int jmp1, jmp2, jmp3;
     private int aux1, aux2, aux3;
+    private String identTripoF;
     private String pilaBC[] = new String[100];
+    private String pilaT[] = new String[100];
     private String memoriaBC[] = new String[10];
     private String pilaIns[] = new String [50];
     private int retornos[]= new int[10];
     private int cntIns = 0;
+    private int cntInsT = 0;
     //---------------------------------------------
     
     //Constructor del parser con el código
@@ -111,6 +117,7 @@ public class Parser {
         createTable(); //Crea la tabla de simbolos
         mandaSimbolos(); //Manda la t. de simbolos a la interfaz
         indiceByteCode(); //Obtiene los indices de las variables para la memoria de Bytecode
+        indiceTriplos();
         eat(llaveAbre); 
         s = S();
         eat(llaveCierra);
@@ -240,6 +247,8 @@ public class Parser {
                 eat(igualx);
                 e2 = E();
                 byteCode(e2);
+                identTripoF = i1.getIdx();
+                Triplos(e2);
                 byteCode("identificador", i1.getIdx()); 
                 eat(puntocomx);
                 S();
@@ -591,139 +600,6 @@ public class Parser {
         } 
     }
     
-    //Indice de memoria para cada variable en Bytecode
-    public void indiceByteCode(){
-        Declarax dx;
-
-        for(int i=0; i<tablaSimbolos.size(); i++){
-            dx = (Declarax)tablaSimbolos.get(i);
-            variable[i] = dx.s2;
-            //sub = Integer.toString(i);
-
-            listIndiceBc.add(variable[i]);
-            }
-        /*for(int j=0; j<listIndiceBc.size(); j++){
-            System.out.println(j);
-            System.out.println(listIndiceBc.get(j));
-            System.out.println();
-            
-            }*/
-        }
-    
-    
-    //METODOS PARA LA GENERACION DE BYTECODE
-    
-    //Para Expresiones
-    public void byteCode(Expx exp){
-        
-        String caso = exp.tipoDato();
-        
-        switch(caso) {
-            case "id":
-                Idx temp;
-                temp = (Idx) exp; 
-                String strId = temp.getIdx();
-                
-                for(int i=0; i<listIndiceBc.size(); i++){
-                    if(strId.equals(listIndiceBc.get(i)))
-                        ipbc(cntIns + ": iload_" + i);
-                    
-                    }
-                jmp2 = cntBC;
-            break;
-            
-            case "int":
-                Numx temp1;
-                temp1 = (Numx) exp;
-                
-                ipbc(cntIns + ": iconst_"+temp1.getNum());
-                jmp1 = cntBC;  
-            break;
-            
-            case "boolean":
-                TrueFalsex temp2;
-                temp2 = (TrueFalsex) exp;
-                
-                if (temp2.getTrueFalsex())
-                    ipbc(cntIns + ": iconst_1");
-                else
-                    ipbc(cntIns + ": iconst_0");
-                jmp1 = cntBC;
-            break;
-            
-            case "compara":
-                Comparax temp3;
-                temp3 = (Comparax) exp;
-                
-                String opt = temp3.getOp().getOpx();
-                String s1t = temp3.getS1();
-                String s2t = temp3.getS2();
-                
-                for(int i=0; i<listIndiceBc.size(); i++){
-                    if(s1t.equals(listIndiceBc.get(i)))
-                        ipbc(cntIns + ": iload_" + i);
-                    
-                    }
-                jmp2 = cntBC;
-                
-                for(int j=0; j<listIndiceBc.size(); j++){
-                    if(s2t.equals(listIndiceBc.get(j)))
-                        ipbc(cntIns + ": iload_" + j);
-                    }
-                jmp2 = cntBC;
-                
-                switch(opt){
-                
-                    case "+":
-                        ipbc(cntIns + ": iadd");
-                        jmp2 = cntBC;
-                        break;
-                        
-                    case "-":
-                        ipbc(cntIns + ": isub");
-                        jmp2 = cntBC;
-                        break;
-                        
-                    case "*":
-                        ipbc(cntIns + ": imul");
-                        jmp2 = cntBC;
-                        break;
-                        
-                    case "<":
-                        //ipbc(cntIns + ": if_cmplt");
-                        //cntIns=cntIns+2;
-                        //jmp2 = cntBC;
-                        break;                    
-                
-                }
-                jmp1 = cntBC;
-            break; 
-        }    
-    }
-      
-    //P (Tipo de token, valor)
-    public void byteCode(String tipo, String s1) {
-        
-        switch(tipo) {
-            
-            case "identificador":
-                for(int i=0; i<listIndiceBc.size(); i++){
-                    if(s1.equals(listIndiceBc.get(i)))
-                        ipbc(cntIns + ": istore_" + i);
-                    }
-                jmp2 = cntBC;
-            break;
-            
-            case "menor":
-            String c = String.valueOf(cntIns-2);
-            
-            ipbc(cntIns + ": if_icmplt " + (s1));
-            cntIns=cntIns+2;
-            jmp1 = cntBC;
-            //System.out.println(c);
-          break;
-        }
-    }
     public int sacaLineaSimbolo(String simbolo){
 //        int espacio = codigoG.indexOf(simbolo);
 //        int linea = espacio + barridoG;
@@ -742,58 +618,351 @@ public class Parser {
 
         return linea;
     }
+    
+//Indice de memoria para cada variable en Bytecode
+    public void indiceByteCode() {
+        Declarax dx;
+
+        for (int i = 0; i < tablaSimbolos.size(); i++) {
+            dx = (Declarax) tablaSimbolos.get(i);
+            variable[i] = dx.s2;
+            //sub = Integer.toString(i);
+
+            listIndiceBc.add(variable[i]);
+        }
+        /*for(int j=0; j<listIndiceBc.size(); j++){
+            System.out.println(j);
+            System.out.println(listIndiceBc.get(j));
+            System.out.println();
+            
+            }*/
+    }
+    
+    
+    public void indiceTriplos() {
+        Declarax dx;
+
+        for (int i = 0; i < tablaSimbolos.size(); i++) {
+            dx = (Declarax) tablaSimbolos.get(i);
+            variable[i] = dx.s2;
+            //sub = Integer.toString(i);
+
+            listIndiceT.add(variable[i]);
+        }
+        /*for(int j=0; j<listIndiceBc.size(); j++){
+            System.out.println(j);
+            System.out.println(listIndiceBc.get(j));
+            System.out.println();
+            
+            }*/
+    }
+    
+    
+    
+    
+    
+
+    //METODOS PARA LA GENERACION DE BYTECODE
+    //Para Expresiones
+    public void Triplos(Expx exp) {
+        String caso = exp.tipoDato();
+        switch (caso) {
+            case "id":
+                /*Idx temp;
+                temp = (Idx) exp;
+                String strId = temp.getIdx();
+
+                for (int i = 0; i < listIndiceT.size(); i++) {
+                    if (strId.equals(listIndiceT.get(i))) {
+                        TriploContador("T"+cntInsT + ": iload_" + i);
+                    }
+
+                }
+                jmp2 = cntT;*/
+                break;
+
+            case "int":
+                Numx temp1;
+                temp1 = (Numx) exp;
+                
+                TriploContador("T"+cntInsT + "=" + temp1.getNum());
+                
+                jmp1 = cntT;
+                break;
+
+            case "boolean":/*
+                TrueFalsex temp2;
+                temp2 = (TrueFalsex) exp;
+
+                if (temp2.getTrueFalsex()) {
+                    ipbc(cntInsT + ": iconst_1");
+                } else {
+                    ipbc(cntInsT + ": iconst_0");
+                }
+                jmp1 = cntBC;*/
+                break;
+
+            case "compara":
+                Comparax temp3;
+                temp3 = (Comparax) exp;
+
+                String opt = temp3.getOp().getOpx();
+                String s1t = temp3.getS1();
+                String s2t = temp3.getS2();
+
+                /*for (int i = 0; i < listIndiceT.size(); i++) {
+                    if (s1t.equals(listIndiceT.get(i))) {
+                        ipbc(cntIns + ": iload_" + i);
+                    }
+
+                }
+                jmp2 = cntBC;
+
+                for (int j = 0; j < listIndiceT.size(); j++) {
+                    if (s2t.equals(listIndiceT.get(j))) {
+                        ipbc(cntIns + ": iload_" + j);
+                    }
+                }*/
+                
+                
+
+                switch (opt) {
+
+                    case "+":
+                        TriploContador("T"+cntInsT+" = "+s1t+" + "+s2t);
+                        jmp2 = cntT;
+                        finTriplo (identTripoF+"= T"+(cntInsT-1));
+                       /* ipbc(cntIns + ": iadd");
+                        jmp2 = cntBC;*/
+                        break;
+
+                    case "-":
+                        TriploContador("T"+cntInsT+" = "+s1t+" - "+s2t);
+                        jmp2 = cntT;
+                        finTriplo (identTripoF+"= T"+(cntInsT-1));
+                        /*
+                        ipbc(cntIns + ": isub");
+                        jmp2 = cntBC;*/
+                        break;
+
+                    case "*":
+                        
+                        TriploContador("T"+cntInsT+" = "+s1t+" * "+s2t);
+                        jmp2 = cntT;
+                        finTriplo (identTripoF+"= T"+(cntInsT-1));
+                        /*
+                        ipbc(cntIns + ": imul");
+                        jmp2 = cntT;*/
+                        break;
+
+                    case "/":
+                        
+                        TriploContador("T"+cntInsT+" = "+s1t+" / "+s2t);
+                        jmp2 = cntT;
+                        finTriplo (identTripoF+"= T"+(cntInsT-1));
+                        //ipbc(cntIns + ": if_cmplt");
+                        //cntIns=cntIns+2;
+                        //jmp2 = cntBC;
+                        break;
+
+                }
+                jmp1 = cntT;
+                break;
+        }
+
+    }
+
+    public void byteCode(Expx exp) {
+
+        String caso = exp.tipoDato();
+
+        switch (caso) {
+            case "id":
+                Idx temp;
+                temp = (Idx) exp;
+                String strId = temp.getIdx();
+
+                for (int i = 0; i < listIndiceBc.size(); i++) {
+                    if (strId.equals(listIndiceBc.get(i))) {
+                        ipbc(cntIns + ": iload_" + i);
+                    }
+
+                }
+                jmp2 = cntBC;
+                break;
+
+            case "int":
+                Numx temp1;
+                temp1 = (Numx) exp;
+
+                ipbc(cntIns + ": iconst_" + temp1.getNum());
+                jmp1 = cntBC;
+                break;
+
+            case "boolean":
+                TrueFalsex temp2;
+                temp2 = (TrueFalsex) exp;
+
+                if (temp2.getTrueFalsex()) {
+                    ipbc(cntIns + ": iconst_1");
+                } else {
+                    ipbc(cntIns + ": iconst_0");
+                }
+                jmp1 = cntBC;
+                break;
+
+            case "compara":
+                Comparax temp3;
+                temp3 = (Comparax) exp;
+
+                String opt = temp3.getOp().getOpx();
+                String s1t = temp3.getS1();
+                String s2t = temp3.getS2();
+
+                for (int i = 0; i < listIndiceBc.size(); i++) {
+                    if (s1t.equals(listIndiceBc.get(i))) {
+                        ipbc(cntIns + ": iload_" + i);
+                    }
+
+                }
+                jmp2 = cntBC;
+
+                for (int j = 0; j < listIndiceBc.size(); j++) {
+                    if (s2t.equals(listIndiceBc.get(j))) {
+                        ipbc(cntIns + ": iload_" + j);
+                    }
+                }
+                jmp2 = cntBC;
+
+                switch (opt) {
+
+                    case "+":
+                        ipbc(cntIns + ": iadd");
+                        jmp2 = cntBC;
+                        break;
+
+                    case "-":
+                        ipbc(cntIns + ": isub");
+                        jmp2 = cntBC;
+                        break;
+
+                    case "*":
+                        ipbc(cntIns + ": imul");
+                        jmp2 = cntBC;
+                        break;
+
+                    case "<":
+                        //ipbc(cntIns + ": if_cmplt");
+                        //cntIns=cntIns+2;
+                        //jmp2 = cntBC;
+                        break;
+
+                }
+                jmp1 = cntBC;
+                break;
+        }
+    }
+
+    //P (Tipo de token, valor)
+    public void byteCode(String tipo, String s1) {
+
+        switch (tipo) {
+
+            case "identificador":
+                for (int i = 0; i < listIndiceBc.size(); i++) {
+                    if (s1.equals(listIndiceBc.get(i))) {
+                        ipbc(cntIns + ": istore_" + i);
+                    }
+                }
+                jmp2 = cntBC;
+                break;
+
+            case "menor":
+                String c = String.valueOf(cntIns - 2);
+
+                ipbc(cntIns + ": if_icmplt " + (s1));
+                cntIns = cntIns + 2;
+                jmp1 = cntBC;
+                //System.out.println(c);
+                break;
+        }
+    }
+
     //Tipo
-    public String byteCode(String tipo){
-        
-        switch(tipo) {
-            
-          case "while":
-            ipbc(cntIns + ": goto" + " - - if_sentence");
-            cntIns=cntIns+2;
-            
-            String c = String.valueOf(cntIns); 
-            jmp2 = cntBC;
-            return c;
+    public String byteCode(String tipo) {
+
+        switch (tipo) {
+
+            case "while":
+                ipbc(cntIns + ": goto" + " - - if_sentence");
+                cntIns = cntIns + 2;
+
+                String c = String.valueOf(cntIns);
+                jmp2 = cntBC;
+                return c;
             //break;    
-            
-        case "sop":
-            ipbc (cntIns + ": getstatic <Field java.io.PrintStream out>" );
-            cntIns=cntIns+2;
-            ipbc ( cntIns + ": ldc <String >");
-            cntIns=cntIns+1;
-            ipbc (cntIns + ": invokevirtual  <Method void println(java.lang.String)>");
-            cntIns=cntIns+2;
-            jmp1 = cntBC;
-            break;  
-            
-         case "return":
-            ipbc(cntIns + ": return");
-            jmp2 = cntBC;
-            break;    
-             
+
+            case "sop":
+                ipbc(cntIns + ": getstatic <Field java.io.PrintStream out>");
+                cntIns = cntIns + 2;
+                ipbc(cntIns + ": ldc <String >");
+                cntIns = cntIns + 1;
+                ipbc(cntIns + ": invokevirtual  <Method void println(java.lang.String)>");
+                cntIns = cntIns + 2;
+                jmp1 = cntBC;
+                break;
+
+            case "return":
+                ipbc(cntIns + ": return");
+                jmp2 = cntBC;
+                break;
+
         }
         return null;
     }
-    
+
     //Contador de instruccions de byteCode
     public void ipbc(String ins) {
-        while(pilaBC[cntBC] != null) {
+        while (pilaBC[cntBC] != null) {
             cntBC++;
         }
         cntIns++;
         pilaBC[cntBC] = ins;
         cntBC++;
     }
+
+    public void TriploContador(String ins) {
+        while (pilaT[cntT] != null) {
+            cntT++;
+        }
+        cntInsT++;
+        pilaT[cntT] = ins;
+        cntT++;
+    }
     
+    public void finTriplo (String ins)
+    {
+       pilaT[cntT] = ins; 
+    }
+
     //Retorna todo el código Bytecode obtenido
     public String getBytecode() {
         String JBC = "";
-        for(int i=0; i<pilaBC.length; i++) {
-            if(pilaBC[i] != null){
+        for (int i = 0; i < pilaBC.length; i++) {
+            if (pilaBC[i] != null) {
                 JBC = JBC + pilaBC[i] + "\n";
             }
         }
         return JBC;
-    }   
-}
+    }
 
+    public String getTriplos() {
+        String JT = "";
+        for (int i = 0; i < pilaT.length; i++) {
+            if (pilaT[i] != null) {
+                JT = JT + pilaT[i] + "\n";
+            }
+        }
+        return JT;
+    }
+}

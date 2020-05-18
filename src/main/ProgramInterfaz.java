@@ -17,6 +17,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
     JFileChooser seleccion = new JFileChooser();
     File archivo;
     FileInputStream entrada;
+    ArrayList<SimobolosValores> valores = new ArrayList<>();
     
     public String AbrirArchivo(File archivo){
     
@@ -67,6 +68,9 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         areaBytecode = new javax.swing.JTextArea();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        TriplosTexto = new javax.swing.JTextArea();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -126,17 +130,17 @@ public class ProgramInterfaz extends javax.swing.JFrame {
 
         tSimbolos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "No.", "Símbolo", "Tipo de Dato", "Linea", "Alcance"
+                "No.", "Símbolo", "Tipo de Dato", "Linea", "Alcance", "Valor"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -152,6 +156,14 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         areaBytecode.setRows(5);
         jScrollPane4.setViewportView(areaBytecode);
 
+        TriplosTexto.setColumns(20);
+        TriplosTexto.setRows(5);
+        jScrollPane5.setViewportView(TriplosTexto);
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel5.setText("Triplos");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -161,14 +173,19 @@ public class ProgramInterfaz extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 373, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(69, 69, 69)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(140, 140, 140)
                         .addComponent(jLabel4))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(32, 32, 32)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(69, 69, 69)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .addComponent(jScrollPane5)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(156, 156, 156)
+                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(72, 72, 72))
@@ -213,7 +230,12 @@ public class ProgramInterfaz extends javax.swing.JFrame {
                         .addGap(29, 29, 29)
                         .addComponent(jLabel4)
                         .addGap(18, 18, 18)
-                        .addComponent(jScrollPane4))
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(11, 11, 11))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .addComponent(jScrollPane1))
                 .addContainerGap(45, Short.MAX_VALUE))
@@ -261,6 +283,58 @@ public class ProgramInterfaz extends javax.swing.JFrame {
             matriz[i][2] = t.get(i).getTipoTok();
         }
         
+        for (int i = 0; i < t.size(); i++) 
+        {
+            if (t.get(i).getTipoTok().equals("Identificador"))
+            {
+                if(t.get(i+1).getTipoTok().equals("Operador") && t.get(i+1).getTok().equals("="))
+                {
+                    if (t.get(i+2).getTipoTok().equals("Integer")||t.get(i+2).getTipoTok().equals("Boolean"))
+                    {
+                        SimobolosValores valor = new SimobolosValores(t.get(i).getTok(),t.get(i+2).getTok());
+                        valores.add(valor);
+                    }
+                    else if(t.get(i+2).getTipoTok().equals("Identificador"))
+                    {
+                        if(t.get(i+3).getTipoTok().equals("Operador"))
+                        {
+                            if(t.get(i+4).getTipoTok().equals("Identificador"))
+                            {
+                                int i1 = Integer.parseInt(buscarValores(t.get(i+2).getTok()));
+                                int i2 = Integer.parseInt(buscarValores(t.get(i+4).getTok()));
+                                int i3;
+                                SimobolosValores valor;
+                                switch (t.get(i+3).getTok())
+                                {
+                                    case "+":
+                                        i3 = i1 + i2;
+                                        valor = new SimobolosValores(t.get(i).getTok(),
+                                        Integer.toString(i3));
+                                        valores.add(valor);
+                                        break;
+                                        
+                                    case "*":
+                                        i3 = i1 * i2;
+                                        valor = new SimobolosValores(t.get(i).getTok(),
+                                        Integer.toString(i3));
+                                        valores.add(valor);
+                                        break;
+                                        
+                                    case "-":
+                                        i3 = i1 - i2;
+                                        valor = new SimobolosValores(t.get(i).getTok(),
+                                        Integer.toString(i3));
+                                        valores.add(valor);
+                                        break;
+                               }
+                           }
+                           
+                       }
+                    }
+                    
+                }
+            }
+        }
         //MEDIDAS de la tTable
         tTable.setRowHeight(25);
        
@@ -288,7 +362,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         //IMPRESION DE LA TABLA DE SIMBOLOS --->
         //Asignando a matriz "ts" datos de Parser Lista de DSimbolos
         ArrayList<DSimbolos> ts = p.mandaSimbolos();
-        String matrizS [][] = new String [ts.size()][5];
+        String matrizS [][] = new String [ts.size()][6];
         
         //Pasando los datos de la matriz "ts" a la matriz de String
         for (int i = 0; i < ts.size(); i++) {
@@ -298,6 +372,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
             matrizS[i][2] = ts.get(i).getTipoSimbolo();
             matrizS[i][3] = ""+(ts.get(i).getLinea()+1);
             matrizS[i][4] = "Publica";
+            matrizS[i][5] = buscarValores(ts.get(i).getSimbolo());
             
         }
         
@@ -305,11 +380,13 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         tSimbolos.setModel(new javax.swing.table.DefaultTableModel(
             matrizS,
             new String [] {
-                "No.", "Símbolo", "Tipo de Dato", "Posicion", "Alcance"
+                "No.", "Símbolo", "Tipo de Dato", "Posicion", "Alcance", "Valor"
             }
         ) {
+            
+            
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false
             };
             
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -318,7 +395,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         });
         
         areaBytecode.setText(p.getBytecode());
-        
+        TriplosTexto.setText(p.getTriplos());
         //Si se presentan errores, no mostrar NADA en las tablas ni en la Seccion de Bytecode
         if(p.informeErrores()) {
         
@@ -367,7 +444,17 @@ public class ProgramInterfaz extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_btnAnalisisActionPerformed
-
+    public String buscarValores(String identificador)
+    {
+        for (int i = 0; i < valores.size(); i++) 
+        {
+            if (valores.get(i).Variable.equals(identificador))
+            {
+            return valores.get(i).Valor;
+            }
+        }
+    return "NULL";
+    }
     //Acciones del Botón LIMPIAR
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
         // TODO add your handling code here:
@@ -459,6 +546,7 @@ public class ProgramInterfaz extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea TriplosTexto;
     private javax.swing.JTextArea areaBytecode;
     private javax.swing.JTextArea areaTexto;
     private javax.swing.JButton btnAbrir;
@@ -468,10 +556,12 @@ public class ProgramInterfaz extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTable tSimbolos;
     private javax.swing.JTable tTable;
     // End of variables declaration//GEN-END:variables
